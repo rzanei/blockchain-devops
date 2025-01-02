@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  evmos-container:
+    image: linux-ubuntu-base:0.0.1
+    container_name: evmos1
+    command: ["bash", "/evmos_start.sh"]
+    networks:
+      - evmos-net
+    volumes:
+      - ./evmos_start.sh:/evmos_start.sh
+      - ${HOME}/.blockchain-devops/evmos-${NODE_VERSION}/bin/evmosd:/usr/bin/evmosd
+    ports:
+      - "26657:26657"
+      - "1317:1317"
+    restart: always
+    tty: true
+    stdin_open: true
+    env_file:
+      - .env
+networks:
+  evmos-net:
+    driver: bridge
+
+# docker compose up -d
