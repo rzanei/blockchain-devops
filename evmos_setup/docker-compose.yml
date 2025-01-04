@@ -12,7 +12,7 @@ services:
       - ${HOME}/.blockchain-devops/evmos-${NODE_VERSION}/bin/evmosd:/usr/bin/evmosd
     ports:
       - "26657:26657"
-      - "1317:1317"
+      - "8545:8545"
     restart: always
     tty: true
     stdin_open: true

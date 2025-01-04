@@ -44,6 +44,8 @@ sed -i 's/create_empty_blocks = true/create_empty_blocks = false/g' $CONFIG
 sed -i 's/seeds = ".*"/seeds = ""/g' $CONFIG
 sed -i 's/size = 5000/size = 10000/g' $CONFIG
 sed -i '/\[api\]/,/enable = false/s/enable = false/enable = true/' $APP
+sed -i '/\[json-rpc\]/,/enable = false/s/enable = false/enable = true/' $APP
+sed -i 's/address = "127.0.0.1:8545"/address = "0.0.0.0:8545"/g' $APP
 
 ${TARGET}d add-genesis-account "genesis" "300000000000000000000000000$DENOM" --keyring-backend test --home "$HOMEDIR"
 
@@ -58,12 +60,15 @@ ${TARGET}d validate-genesis --home "$HOMEDIR"
 
 ${TARGET}d start \
   --chain-id $CHAINID 
-  --api.enable --json-rpc.api eth,txpool,personal,net,debug,web3 --json-rpc.enable true --grpc-web.enable true --grpc.enable true \
+  --api.enable \
+  --json-rpc.api eth,txpool,personal,net,debug,web3 \
+  --json-rpc.enable true \
+  --grpc-web.enable true \
+  --grpc.enable true \
   --rpc.laddr "tcp://0.0.0.0:26657" \
   --rpc.pprof_laddr "127.0.0.1:6060" \
   --p2p.laddr "0.0.0.0:26656" \
   --grpc.address "0.0.0.0:9090" \
-  --json-rpc.address "0.0.0.0:8545" \
   --json-rpc.ws-address "0.0.0.0:8546" \
   --fees 7aevmos \
   --home "$HOMEDIR"
