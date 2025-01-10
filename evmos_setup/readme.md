@@ -41,5 +41,52 @@ docker compose up -d
 5:45PM INF indexed block events height=4 module=txindex server=node 
 ```
 
+# Useful Evmos Commands
 
+List keys (address, name and relative data)
+```bash
+ evmosd keys list --home $HOME/.evmosd/ --keyring-backend test
 
+# Example of Output
+- address: evmos1ckg040r6tnjfzfwm9skj67qhyqwh3qp4cy5qgn
+  name: alice
+  pubkey: '{"@type":"/ethermint.crypto.v1.ethsecp256k1.PubKey","key":"A+H/2of63e1x/VYQYac+SfCOTNjTjBTOHXsasGBFE2bY"}'
+  type: local
+- address: evmos1qy47vryjvtu0exwp8q0ufelgper6ag4kxud4h0
+  name: bob
+  pubkey: '{"@type":"/ethermint.crypto.v1.ethsecp256k1.PubKey","key":"AogLOh9fg8vq6TDvJtVJs0inTyLGm7I6kHyHwsLiT8Hn"}'
+  type: local
+- address: evmos1j6m2w8sgccexpv0g2whdls0tdynfwl6etlcthv
+  name: genesis
+  pubkey: '{"@type":"/ethermint.crypto.v1.ethsecp256k1.PubKey","key":"AlT+mvXrSgcOsDRNy236zcaA/K4BD3T1RyKdKrT+zjPv"}'
+  type: local
+```
+
+List debug addr (Address hex, Address bytes)
+```bash
+ evmosd debug addr evmos1ckg040r6tnjfzfwm9skj67qhyqwh3qp4cy5qgn
+
+# Example of Output
+Address bytes: [197 144 250 188 122 92 228 145 37 219 44 45 45 120 23 32 29 120 128 53]
+Address hex: 0xc590FAbc7a5CE49125DB2c2d2D7817201D788035
+```
+
+Fund address from genesis: (TODO: script automation to autofund)
+```bash
+ evmosd tx bank send evmos1j6m2w8sgccexpv0g2whdls0tdynfwl6etlcthv evmos1ckg040r6tnjfzfwm9skj67qhyqwh3qp4cy5qgn 10000000000000aevmos --keyring-backend test --chain-id evmos_9000-1 --gas-prices 700000000aevmos -y 
+
+# Example of Output
+code: 0
+codespace: ""
+data: ""
+events: []
+gas_used: "0"
+gas_wanted: "0"
+height: "0"
+info: ""
+logs: []
+raw_log: ""
+timestamp: ""
+tx: null
+txhash: 3B2EFFC5D9DA13063A4A70529CD7DDC4B974C296E5FCB22AD134DD522C539167
+```
