@@ -18,8 +18,8 @@ KEYRING=test
 
 rm -rf $HOMEDIR/
 
-${TARGET}d config chain-id $CHAINID --home "$HOMEDIR"
-${TARGET}d config keyring-backend $KEYRING --home "$HOMEDIR"
+# ${TARGET}d config chain-id $CHAINID --home "$HOMEDIR"
+# ${TARGET}d config keyring-backend $KEYRING --home "$HOMEDIR"
 ${TARGET}d init $MONIKER --chain-id $CHAINID --home "$HOMEDIR"
 
 # Created account "genesis" 
@@ -43,9 +43,16 @@ jq '.consensus_params["block"]["max_gas"]="10000000"' "$GENESIS" >"$TMP_GENESIS"
 sed -i 's/create_empty_blocks = true/create_empty_blocks = false/g' $CONFIG
 sed -i 's/seeds = ".*"/seeds = ""/g' $CONFIG
 sed -i 's/size = 5000/size = 10000/g' $CONFIG
+sed -i '/\[rpc\]/,/laddr = "tcp:\/\/127.0.0.1:26657"/s/laddr = "tcp:\/\/127.0.0.1:26657"/laddr = "tcp:\/\/0.0.0.0:26657"/' $CONFIG
+
 sed -i '/\[api\]/,/enable = false/s/enable = false/enable = true/' $APP
 sed -i '/\[json-rpc\]/,/enable = false/s/enable = false/enable = true/' $APP
 sed -i 's/address = "127.0.0.1:8545"/address = "0.0.0.0:8545"/g' $APP
+sed -i '/\[json-rpc\]/,/api = "eth,net,web3"/s/api = "eth,net,web3"/api = "eth,txpool,personal,net,debug,web3"/' $APP
+sed -i '/\[grpc-web\]/,/enable = false/s/enable = false/enable = true/' $APP
+sed -i '/\[grpc\]/,/enable = false/s/enable = false/enable = true/' $APP
+sed -i '/\[api\]/,/enabled-unsafe-cors = false/s/enabled-unsafe-cors = false/enabled-unsafe-cors = true/' $APP
+sed -i '/cors_allowed_origins = \[\]/s/cors_allowed_origins = \[\]/cors_allowed_origins = ["*"]/' $CONFIG
 
 ${TARGET}d add-genesis-account "genesis" "300000000000000000000000000$DENOM" --keyring-backend test --home "$HOMEDIR"
 
@@ -59,15 +66,9 @@ ${TARGET}d collect-gentxs --home "$HOMEDIR"
 ${TARGET}d validate-genesis --home "$HOMEDIR"
 
 ${TARGET}d start \
-  --chain-id $CHAINID 
+  --chain-id $CHAINID \
   --api.enable \
-  --json-rpc.api eth,txpool,personal,net,debug,web3 \
-  --json-rpc.enable true \
-  --grpc-web.enable true \
-  --grpc.enable true \
-  --rpc.laddr "tcp://0.0.0.0:26657" \
   --rpc.pprof_laddr "127.0.0.1:6060" \
-  --p2p.laddr "0.0.0.0:26656" \
   --grpc.address "0.0.0.0:9090" \
   --json-rpc.ws-address "0.0.0.0:8546" \
   --fees 7aevmos \
