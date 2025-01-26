@@ -9,6 +9,7 @@ The project currently focuses on automating the setup for:
 
 - **Dockerfile.linux-ubuntu-base**: A base Dockerfile for setting up a containerized environment based on Ubuntu.
 - **evmos_setup/**: Contains Docker Compose file and startup script to set up an Evmos node.
+- **lotus_setup/**: Contains Docker Compose file and startup script to set up a Lotus node.
 
 ## Features
 
@@ -34,5 +35,8 @@ cd blockchain-devops
 ### 2. Navigate the Desidered Setup
 - Select the desidered folder and explore the readme.md file and follow the setup instructions.
 
-
-
+### Get Binary Examples
+```bash
+# Get lotus
+./get-binary.sh lotus 1.31.0
+```

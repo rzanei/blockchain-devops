@@ -17,6 +17,17 @@ if [ ! -d "$DEST_DIR" ]; then
       mkdir -p  "${DEST_DIR}"
       tar zxf "/tmp/${FILE}" -C "${DEST_DIR}"
       ;;
+    lotus)
+        FILE="${NODE}_v${VERSION}_linux_amd64_v1.tar.gz"
+        URL="https://github.com/filecoin-project/lotus/releases/download/v${VERSION}/${FILE}"
+        wget -c "${URL}" -O "/tmp/${FILE}"
+
+        # Create the destination directory and extract the tarball
+        mkdir -p  "${DEST_DIR}"
+        # tar zxf "/tmp/${FILE}" -C "${DEST_DIR}"
+        tar --wildcards --strip-components=1 -xzf "/tmp/${FILE}" -C "${DEST_DIR}" "*/lotus"
+        chmod +x ${DEST_DIR}/lotus
+        ;;
     *)
       # Exit with an error message if node is unsupported
       echo "Unsupported node: ${NODE}"
