@@ -30,7 +30,8 @@ Before using this repository, ensure you have the following tools installed:
 
 ```bash
 git clone https://github.com/your-username/blockchain-devops.git
-cd blockchain-devops
+cd blockchain-devops/<blockchain>_setup
+./<blockchain>_start.sh
 ```
 ### 2. Navigate the Desidered Setup
 - Select the desidered folder and explore the readme.md file and follow the setup instructions.
