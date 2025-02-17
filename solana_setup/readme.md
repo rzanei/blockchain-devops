@@ -48,3 +48,16 @@ solana cluster-version
   rustc --version
   solana --version
   ```
+
+## Start a Solana Local Test Node
+
+Run the following comand:
+```sh
+./solana_start.sh
+```
+## Faucet the Accounts
+
+Run the following comand:
+```sh
+./faucet_accounts.sh
+```
