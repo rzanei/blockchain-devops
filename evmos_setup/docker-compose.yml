@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  evmos-container:
+    image: linux-ubuntu-base:0.0.1
+    container_name: evmos1
+    command: ["bash", "/evmos_start.sh"]
+    networks:
+      - evmos-net
+    volumes:
+      - ./evmos_start.sh:/evmos_start.sh
+      - ${HOME}/.blockchain-devops/evmos-${NODE_VERSION}/bin/evmosd:/usr/bin/evmosd
+    ports:
+      - "26657:26657"    # Tendermint RPC port (used for node communication)
+      - "8545:8545"      # JSON-RPC port (used for Ethereum-compatible RPC requests)
+      - "9090:9090"      # Prometheus (if enabled)
+      - "1317:1317"      # LCD (optional, for querying via REST API)
+      - "9091:9091"      # Another port for Prometheus metrics (if required)
+    restart: always
+    tty: true
+    stdin_open: true
+    env_file:
+      - .env
+networks:
+  evmos-net:
+    driver: bridge
+
+# docker compose up -d
