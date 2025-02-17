@@ -66,4 +66,18 @@ else
     echo -e "Yarn is not installed."
 fi
 
+# Copy Solana binaries to $HOME/.blockchain-devops/solana
+DEVOPS_DIR="$HOME/.blockchain-devops/solana"
+mkdir -p "$DEVOPS_DIR"
+
+if check_command solana-test-validator && check_command solana && check_command solana-keygen; then
+    cp "$(command -v solana-test-validator)" "$DEVOPS_DIR"
+    cp "$(command -v solana)" "$DEVOPS_DIR"
+    cp "$(command -v solana-keygen)" "$DEVOPS_DIR"
+
+    echo -e "$SUCCESS Solana binaries copied to $DEVOPS_DIR ✅"
+else
+    echo -e "$ERROR Failed to locate some Solana binaries. Ensure they are installed properly. ❌"
+fi
+
 echo -e "\n✅ Installation complete. Please restart your terminal to apply all changes."

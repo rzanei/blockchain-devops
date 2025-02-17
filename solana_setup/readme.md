@@ -53,11 +53,37 @@ solana cluster-version
 
 Run the following comand:
 ```sh
+cd solana_setup
 ./solana_start.sh
 ```
 ## Faucet the Accounts
 
 Run the following comand:
 ```sh
+cd solana_setup
 ./faucet_accounts.sh
 ```
+
+## Start a Solana Docker Test Node
+
+Run the following comand:
+```sh
+cd solana_setup
+
+docker compose up -d
+
+```
+## Faucet the Accounts
+
+Run the following comand:
+```sh
+cd solana_setup
+./faucet_accounts.sh
+```
+
+## Stop Solana Docker Test Node
+
+Run the following comand:
+```sh
+cd solana_setup
+docker compose down

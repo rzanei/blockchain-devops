@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  solana-container:
+    image: linux-ubuntu-base:0.0.1
+    container_name: solana-node
+    command: ["bash", "/solana_start.sh"]
+    networks:
+      - solana-net
+    volumes:
+      - ./solana_start.sh:/solana_start.sh
+      - ${HOME}/.solana-keypair:/root/.solana-keypair
+      - ${HOME}/.blockchain-devops/solana/solana:/usr/bin/solana
+      - ${HOME}/.blockchain-devops/solana/solana-keygen:/usr/bin/solana-keygen
+      - ${HOME}/.blockchain-devops/solana/solana-test-validator:/usr/bin/solana-test-validator
+
+    ports:
+      - "8899:8899"   # JSON-RPC Port
+      - "8900:8900"   # Gossip Port
+      - "8001:8001"   # TPU Port
+      - "8002:8002"   # TPU Port (for repair)
+      - "9600:9600"   # Prometheus metrics
+    restart: always
+    tty: true
+    stdin_open: true
+    privileged: true
+
+networks:
+  solana-net:
+    driver: bridge
