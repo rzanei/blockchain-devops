@@ -5,6 +5,7 @@ TARGET="solana"
 KEYPAIR_DIR="$HOME/.solana-keypair/"
 ACCOUNTS=${1:-5}  # Default to 3 accounts if ACCOUNTS is not set
 GENESIS_ACCOUNT_PATH="$KEYPAIR_DIR""account0"
+HOST="localhost"
 
 if [ -d "$KEYPAIR_DIR" ]; then
     echo "🔐 Keypair directory already exists..."
@@ -35,6 +36,6 @@ done
 
 rm -rf test-ledger
 
-solana config set --keypair "$GENESIS_ACCOUNT_PATH/keypair"
+solana config set --keypair "$GENESIS_ACCOUNT_PATH/keypair" --url "http://$HOST:8899"
 
 solana-test-validator
