@@ -13,6 +13,7 @@ services:
       - ${HOME}/.blockchain-devops/solana/solana:/usr/bin/solana
       - ${HOME}/.blockchain-devops/solana/solana-keygen:/usr/bin/solana-keygen
       - ${HOME}/.blockchain-devops/solana/solana-test-validator:/usr/bin/solana-test-validator
+      - ${HOME}/.blockchain-devops/solana/solana-fetched-programs/metaplex_token_metadata_program.so:/root/.programs/metaplex_token_metadata_program.so
 
     ports:
       - "8899:8899"   # JSON-RPC Port

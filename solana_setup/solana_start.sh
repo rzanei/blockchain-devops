@@ -38,4 +38,4 @@ rm -rf test-ledger
 
 solana config set --keypair "$GENESIS_ACCOUNT_PATH/keypair" --url "http://$HOST:8899"
 
-solana-test-validator
+solana-test-validator --bpf-program metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s /root/.programs/metaplex_token_metadata_program.so
