@@ -4,6 +4,7 @@ This repository contains scripts and configurations to automate the setup of blo
 
 1. **Solana**
 2. **Evmos**
+3. **Akash**
 
 ## Contents
 
