@@ -1,0 +1,25 @@
+FROM rzanei/linux-ubuntu-base:0.0.1
+
+ENV NODE_VERSION=0.38.4
+ENV NODE=akash
+ENV DEST_DIR=/opt/blockchain-devops/${NODE}-${NODE_VERSION}
+
+RUN apt-get update --fix-missing -y && \
+    apt-get install -y wget unzip && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Create destination directory and download the binary
+RUN mkdir -p ${DEST_DIR} && \
+    FILE="${NODE}_${NODE_VERSION}_linux_amd64.zip" && \
+    URL="https://github.com/akash-network/node/releases/download/v${NODE_VERSION}/${FILE}" && \
+    wget -c "${URL}" -O "/tmp/${FILE}" && \
+    unzip "/tmp/${FILE}" -d "${DEST_DIR}" && \
+    mv ${DEST_DIR}/akash /usr/bin/akash && \
+    chmod +x /usr/bin/akash && \
+    rm -rf /tmp/${FILE}
+
+# Copy the startup script into the image
+COPY akash_start.sh /usr/local/bin/akash_start.sh
+RUN chmod +x /usr/local/bin/akash_start.sh
+
+# ENTRYPOINT ["/usr/local/bin/akash_start.sh"]
