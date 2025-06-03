@@ -5,6 +5,7 @@ This repository contains scripts and configurations to automate the setup of blo
 1. **Solana**
 2. **Evmos**
 3. **Akash**
+3. **Osmosis**
 
 ## Contents
 
@@ -12,6 +13,7 @@ This repository contains scripts and configurations to automate the setup of blo
 - **evmos_setup/**: Contains the Docker Compose file and startup script for setting up an Evmos node.
 - **solana_setup/**: Contains the Docker Compose file and startup script for setting up a Solana node.
 - **akash_setup/**: Contains the Docker Compose file and startup script for setting up an Akash node.
+- **osmosis_setup/**: Contains the Docker Compose file and startup script for setting up an Osmosis node.
 
 ## Features
 
@@ -35,3 +37,14 @@ Start by cloning the repository:
 ```bash
 git clone https://github.com/rzanei/blockchain-devops.git
 cd blockchain-devops
+```
+
+### How to Download a Binary?
+
+```bash
+
+# Example of use
+./get-binary.sh akash 0.38.4
+./get-binary.sh osmosis 29.0.1
+./get-binary.sh evmos 19.0.0
+```
