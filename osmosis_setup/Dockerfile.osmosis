@@ -1,0 +1,25 @@
+FROM rzanei/linux-ubuntu-base:0.0.1
+
+ENV NODE_VERSION=29.0.1
+ENV NODE=osmosis
+ENV DEST_DIR=/opt/blockchain-devops/${NODE}-${NODE_VERSION}
+
+RUN apt-get update --fix-missing -y && \
+    apt-get install -y wget tar && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Create destination directory and download the binary
+RUN mkdir -p ${DEST_DIR} && \
+    FILE="${NODE}d-${NODE_VERSION}-linux-amd64.tar.gz" && \
+    URL="https://github.com/osmosis-labs/osmosis/releases/download/v${NODE_VERSION}/${FILE}" && \
+    wget -c "${URL}" -O "/tmp/${FILE}" && \
+    tar -xzf "/tmp/${FILE}" -C "${DEST_DIR}" && \
+    mv ${DEST_DIR}/${NODE}d /usr/bin/${NODE}d && \
+    chmod +x /usr/bin/${NODE}d && \
+    rm -rf /tmp/${FILE}
+
+# Copy the startup script into the image
+COPY osmosis_start.sh /usr/local/bin/osmosis_start.sh
+RUN chmod +x /usr/local/bin/osmosis_start.sh
+
+# ENTRYPOINT ["/usr/local/bin/osmosis_start.sh"]
