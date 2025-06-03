@@ -11,10 +11,11 @@ This repository contains scripts and configurations to automate the setup of blo
 - **Dockerfile.linux-ubuntu-base**: A base Dockerfile for creating a containerized environment based on Ubuntu.
 - **evmos_setup/**: Contains the Docker Compose file and startup script for setting up an Evmos node.
 - **solana_setup/**: Contains the Docker Compose file and startup script for setting up a Solana node.
+- **akash_setup/**: Contains the Docker Compose file and startup script for setting up an Akash node.
 
 ## Features
 
-- **Automated Node Setup**: Easily deploy blockchain nodes with Docker for both Solana and Evmos.
+- **Automated Node Setup**: Easily deploy blockchain nodes with Docker for both Solana, Evmos and Akash.
 - **Scalable and Replicable**: Set up nodes that can be easily scaled or replicated across environments.
 - **Customizable Dockerfile**: Build customized blockchain setups tailored to specific needs.
 
