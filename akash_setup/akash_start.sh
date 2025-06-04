@@ -60,6 +60,7 @@ sed -i '/\[api\]/,/enable = false/s/enable = false/enable = true/' "$APP"
 sed -i '/\[api\]/,/enabled-unsafe-cors = false/s/enabled-unsafe-cors = false/enabled-unsafe-cors = true/' "$APP"
 sed -i '/\[grpc\]/,/enable = false/s/enable = false/enable = true/' "$APP"
 sed -i '/\[grpc-web\]/,/enable = false/s/enable = false/enable = true/' "$APP"
+sed -i 's/^enable *= *true/enable = false/' "$APP"
 sed -i 's|laddr = "tcp://127.0.0.1:26657"|laddr = "tcp://0.0.0.0:26657"|' "$CONFIG"
 
 # Configure persistent peers

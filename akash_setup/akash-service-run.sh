@@ -1,13 +1,18 @@
 #!/bin/bash
 set -e
 
-echo "🚀 Starting Akash Validator..."
+echo "🔁 Persistent Akash Node Supervisor"
 
-# Trap clean shutdown
 trap 'echo "🛑 SIGTERM received, stopping..."; kill -TERM "$child"; wait "$child"; exit 0' SIGTERM
 
-# Start the node process
-/usr/local/bin/akash_start.sh &
+while true; do
+  echo "🚀 Starting Akash Validator..."
+  /usr/local/bin/akash_start.sh &
+  child=$!
 
-child=$!
-wait "$child"
+  wait "$child"
+  EXIT_CODE=$?
+
+  echo "❌ Akash exited with code $EXIT_CODE. Restarting in 10 seconds..."
+  sleep 10
+done

@@ -2,7 +2,7 @@
 version: "2.0"
 services:
   node:
-    image: rzanei/akash_v0.38.4:v0.38.4-rc10
+    image: rzanei/akash_v0.38.4:v0.38.4-rc14
     expose:
       - port: 26657
         to:
