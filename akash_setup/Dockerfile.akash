@@ -17,9 +17,15 @@ RUN mkdir -p ${DEST_DIR} && \
     mv ${DEST_DIR}/akash /usr/bin/akash && \
     chmod +x /usr/bin/akash && \
     rm -rf /tmp/${FILE}
-
-# Copy the startup script into the image
+# Copy and configure startup + utility scripts
 COPY akash_start.sh /usr/local/bin/akash_start.sh
-RUN chmod +x /usr/local/bin/akash_start.sh
+COPY akash-service-run.sh /usr/local/bin/akash-service-run.sh
+COPY akash_validator_create.sh /usr/local/bin/akash_validator_create.sh
+COPY akash_restake.sh /usr/local/bin/akash_restake.sh
 
-# ENTRYPOINT ["/usr/local/bin/akash_start.sh"]
+RUN chmod +x /usr/local/bin/akash_start.sh \
+             /usr/local/bin/akash-service-run.sh \
+             /usr/local/bin/akash_validator_create.sh \
+             /usr/local/bin/akash_restake.sh
+
+ENTRYPOINT ["/usr/local/bin/akash-service-run.sh"]
