@@ -1,0 +1,37 @@
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install core dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    wget \
+    gnupg \
+    software-properties-common \
+    lsb-release \
+    ca-certificates
+
+# Add Intel SGX repo for Ubuntu 22.04 (jammy)
+RUN echo "deb [arch=amd64 signed-by=/usr/share/keyrings/intel-sgx.gpg] https://download.01.org/intel-sgx/sgx_repo/ubuntu jammy main" | tee /etc/apt/sources.list.d/intel-sgx.list && \
+    curl -fsSL https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | gpg --dearmor -o /usr/share/keyrings/intel-sgx.gpg
+
+# Install tools + SGX runtime libs
+RUN apt-get update && apt-get install -y \
+    git \
+    bash \
+    python3 \
+    build-essential \
+    jq \
+    net-tools \
+    vim \
+    libudev-dev \
+    libprotobuf-dev \
+    libsgx-enclave-common \
+    libsgx-epid \
+    libsgx-quote-ex \
+    libsgx-dcap-ql \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /root
+
+# docker build -f Dockerfile.linux-ubuntu-base-22-04 -t linux-ubuntu-base-22-04:0.0.1 .

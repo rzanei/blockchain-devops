@@ -2,13 +2,13 @@
 
 # -------------------------------------------
 # Multi-Chain Binary Downloader Script
-# Supports: akash, osmosis, evmos
+# Supports: akash, osmosis, evmos, secret
 # Usage: ./get-node.sh <node> <version>
 # Example: ./get-node.sh osmosis 29.0.1
 # -------------------------------------------
 
-NODE=${1:?❌ Node is required (e.g., osmosis, akash, evmos)}
-VERSION=${2:?❌ Version is required (e.g., 29.0.1)}
+NODE=${1:?❌ Node is required (e.g., osmosis, akash, evmos, secret)}
+VERSION=${2:?❌ Version is required (e.g., 1.19.0)}
 
 DEST_DIR="${HOME}/.blockchain-devops/${NODE}-${VERSION}"
 
@@ -45,9 +45,19 @@ if [ ! -d "$DEST_DIR" ]; then
       tar -xzf "/tmp/${FILE}" -C "${DEST_DIR}"
       ;;
 
+    secret)
+      echo "📦 Downloading Secret version ${VERSION}..."
+      FILE="secretnetwork_${VERSION}_mainnet_goleveldb_amd64_ubuntu-22.04.deb"
+      URL="https://github.com/scrtlabs/SecretNetwork/releases/download/v${VERSION}/${FILE}"
+      wget -c "${URL}" -O "/tmp/${FILE}"
+
+      mkdir -p "${DEST_DIR}"
+      dpkg-deb -x "/tmp/${FILE}" "${DEST_DIR}"
+      ;;
+
     *)
       echo "❌ Unsupported node: ${NODE}"
-      echo "👉 Supported nodes: akash, osmosis, evmos"
+      echo "👉 Supported nodes: akash, osmosis, evmos, secret"
       exit 1
       ;;
   esac
