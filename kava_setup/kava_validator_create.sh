@@ -1,13 +1,13 @@
 #!/bin/bash
 set -e
 
-TARGET="kava"
+TARGET="kavad"
 HOMEDIR="$HOME/.${TARGET}"
 NODE_RPC="https://kava-rpc.polkachu.com:443"  # Use a valid RPC endpoint
 KEY_NAME="thedigitalempire"                  # <-- Replace with your key name
 MONIKER="TheDigitalEmpire"                   # <-- Customize as needed
 CHAIN_ID="kava_2222-10"                      # <-- Confirm latest chain ID
-DELEGATION="60000000ukava"                  # 60 KAVA in microdenom
+DELEGATION="10000000ukava"                  # 10 KAVA in microdenom
 FEES="6000ukava"
 COMMISSION_RATE="0.05"
 COMMISSION_MAX_RATE="0.20"

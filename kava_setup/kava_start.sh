@@ -98,7 +98,7 @@ sed -i 's/^snapshot-keep-recent *=.*/snapshot-keep-recent = 0/' "$APP"
 if [ "$INIT_NODE" = true ]; then
   echo "✅ Node initialized. Load your validator key:"
   echo "👉 Run inside container:"
-  echo "   $TARGET keys add validator --recover --keyring-backend $KEYRING --home $HOMEDIR"
+  echo "   $TARGET keys add thedigitalempire --recover --keyring-backend $KEYRING --home $HOMEDIR"
 fi
 
 # === START NODE ===
