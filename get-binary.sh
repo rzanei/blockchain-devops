@@ -52,6 +52,24 @@ if [ ! -d "$DEST_DIR" ]; then
       chmod +x "${DEST_DIR}/kavad"
       ;;
 
+    sentinel)
+      echo "📦 Downloading Sentinel version ${VERSION}..."
+      FILE="sentinelhub"
+      URL="https://github.com/sentinel-official/hub/releases/download/v${VERSION}/${FILE}"
+      wget -c "${URL}" -O "/tmp/${FILE}" || {
+        echo "⚠️ Download failed — falling back to building from source"
+        git clone https://github.com/sentinel-official/hub.git /tmp/hub-src
+        cd /tmp/hub-src
+        git checkout "v${VERSION}"
+        make install
+        cp "$(which sentinelhub)" "${DEST_DIR}/sentinelhub"
+        exit 0
+      }
+      chmod +x "/tmp/${FILE}"
+      mkdir -p "${DEST_DIR}"
+      mv "/tmp/${FILE}" "${DEST_DIR}/sentinelhub"
+      ;;
+
     *)
       echo "❌ Unsupported node: ${NODE}"
       echo "👉 Supported nodes: akash, osmosis, evmos, kava"
