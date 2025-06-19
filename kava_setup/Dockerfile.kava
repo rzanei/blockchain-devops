@@ -1,0 +1,32 @@
+FROM rzanei/linux-ubuntu-base:0.0.1
+
+ENV NODE_VERSION=0.28.0
+ENV NODE=kava
+ENV DEST_DIR=/opt/blockchain-devops/${NODE}-${NODE_VERSION}
+
+# Install required tools
+RUN apt-get update --fix-missing -y && \
+    apt-get install -y wget zstd pv lz4 && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Create destination directory and download the Kava binary
+RUN mkdir -p ${DEST_DIR} && \
+    FILE="kava-v${NODE_VERSION}-linux-amd64" && \
+    URL="https://github.com/Kava-Labs/kava/releases/download/v${NODE_VERSION}/${FILE}" && \
+    wget -c "${URL}" -O "/tmp/kava" && \
+    mv /tmp/kava ${DEST_DIR}/kavad && \
+    chmod +x ${DEST_DIR}/kavad && \
+    ln -s ${DEST_DIR}/kavad /usr/bin/kavad
+
+# Copy and configure startup + utility scripts
+COPY kava_start.sh /usr/local/bin/kava_start.sh
+COPY kava_service_run.sh /usr/local/bin/kava_service_run.sh
+COPY kava_validator_create.sh /usr/local/bin/kava_validator_create.sh
+COPY kava_restake.sh /usr/local/bin/kava_restake.sh
+
+RUN chmod +x /usr/local/bin/kava_start.sh \
+             /usr/local/bin/kava_service_run.sh \
+             /usr/local/bin/kava_validator_create.sh \
+             /usr/local/bin/kava_restake.sh
+
+ENTRYPOINT ["/usr/local/bin/kava_service_run.sh"]

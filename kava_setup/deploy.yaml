@@ -1,0 +1,48 @@
+version: "2.0"
+services:
+  node:
+    image: rzanei/kava_v0.28.0:v0.28.0-rc34
+    expose:
+      - port: 26657
+        to:
+          - global: true
+      - port: 26656
+        to:
+          - global: true
+    params:
+      storage:
+        data:
+          mount: /root/.kavad
+
+profiles:
+  compute:
+    node:
+      resources:
+        cpu:
+          units: 8  # Boosted CPU
+        memory:
+          size: 64Gi  # Boosted RAM
+        storage:
+          - size: 10Gi
+          - name: data
+            size: 400Gi
+            attributes:
+              persistent: true
+              class: beta3
+  placement:
+    dcloud:
+      attributes:
+        host: akash
+      signedBy:
+        anyOf:
+          - akash1365yvmc4s7awdyj3n2sav7xfx76adc6dnmlx63
+      pricing:
+        node:
+          denom: uakt
+          amount: 500
+
+deployment:
+  node:
+    dcloud:
+      profile: node
+      count: 1
