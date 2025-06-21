@@ -10,18 +10,44 @@ This repository contains scripts and configurations to automate the setup of blo
 * **Evmos**
 * **Akash**
 * **Osmosis** *(🚧 Work in progress)*
+* **Secret** *(🚧 Work in progress See branch Notes)*
 * **Sentinel**
 
 ---
 
 ## 📁 Contents
 
-* `Dockerfile.linux-ubuntu-base`: A base Dockerfile for creating a containerized environment based on Ubuntu.
-* `evmos_setup/`: Contains the Docker Compose file and startup script for setting up an Evmos node.
-* `solana_setup/`: Contains the Docker Compose file and startup script for setting up a Solana node.
-* `akash_setup/`: Contains the Docker Compose file and startup script for setting up an Akash node.
-* `osmosis_setup/`: Contains the Docker Compose file and startup script for setting up an Osmosis node.
-* `sentinel_setup/`: Contains the Dockerfile, validator scripts, and full startup automation for SentinelHub.
+* **`Dockerfile.linux-ubuntu-base`**: A base Dockerfile for creating a containerized environment based on Ubuntu, used across multiple node setups.
+
+### 🧱 Network Setups
+
+Each directory (`*_setup/`) contains the full automation stack required to deploy and operate a blockchain node in a reproducible and containerized way.
+
+* **`evmos_setup/`**: Contains the Dockerfile, Akash deployment manifest, and scripts to set up and manage an **Evmos** node.
+* **`solana_setup/`**: Contains the necessary files to deploy and run a **Solana** validator node.
+* **`akash_setup/`**: Includes automation for setting up a **validator node on Akash**, including restake scripts and Akash-native deployment manifest.
+* **`osmosis_setup/`**: *(🚧 Work in progress – not currently in active set)*.
+* **`secret_setup/`**: *(🚧 Work in progress – see WIP branch)* — experimental support for **Secret Network**.
+* **`sentinel_setup/`**: Complete Dockerized setup for **SentinelHub** validator on Cosmos SDK v0.47 (`v0.11.5`), including genesis patching and validator lifecycle automation.
+
+---
+
+## 📦 Folder File Structure
+
+*(Applies to each `*_setup/` directory)*
+
+| File                            | Description                                                                                |
+| ------------------------------- | ------------------------------------------------------------------------------------------ |
+| `.env`                          | Contains the `NODE_VERSION` used and tested for the binary.                                |
+| `deploy.yaml`                   | Akash Network deployment manifest to launch the node as a containerized service.           |
+| `Dockerfile.[network]`          | Dockerfile used to build the node image for deployment.                                    |
+| `genesis.[chain].json`          | Genesis file compatible with the tested version (used for snapshot sync and validation).   |
+| `[network]_restake.sh`          | Script used *inside the container* to withdraw and re-delegate validator rewards.          |
+| `[network]_service_run.sh`      | Supervisor that runs the node in a loop, restarting it if it crashes.                      |
+| `[network]_start.sh`            | Full startup logic: genesis patching, config tuning, snapshot extraction, and node launch. |
+| `[network]_validator_create.sh` | Script to create a validator with configured commission, moniker, and delegation.          |
+
+> **Note:** File prefixes like `sentinel_`, `akash_`, etc., vary depending on the blockchain.
 
 ---
 
@@ -54,9 +80,9 @@ cd blockchain-devops
 
 ---
 
-### 2. How to Download a Binary
+## 🔽 Binary Download Automation
 
-Use the provided `get-binary.sh` script to download the binary for the desired blockchain.
+Use the provided `get-binary.sh` script to download and extract the correct version of a node binary.
 
 ```bash
 # Example usage
@@ -64,6 +90,76 @@ Use the provided `get-binary.sh` script to download the binary for the desired b
 ./get-binary.sh kava 0.28.0
 ./get-binary.sh evmos 19.0.0
 ./get-binary.sh sentinel 0.11.5
+```
+
+> Binaries will be downloaded and extracted into:
+>
+> ```bash
+> ~/.blockchain-devops/<node>-<version>/
+> ```
+
+### 📦 Supported Chains
+
+* `akash`
+* `osmosis`
+* `evmos`
+* `kava`
+* `sentinel`
+
+### 🛠️ Script Logic Overview (`get-binary.sh`)
+
+The script automatically:
+
+* Identifies the requested node and version.
+* Downloads the binary (ZIP or TAR) from the official GitHub release.
+* Extracts or unpacks it to a designated local directory.
+* Makes the binary executable.
+
+This ensures **reproducibility and portability** across environments or deployments.
+
+---
+
+## 🌐 Persistent Peer Checker
+
+The `persistent-peer-checker.sh` script helps **validate and discover live, reachable peers** for a Cosmos SDK-based blockchain.
+
+### ✅ What It Does
+
+* Checks reachability (`IP:PORT`) for a list of known nodes.
+* Verifies whether they serve Tendermint snapshots (via `/snapshots` endpoint).
+* Outputs two lists:
+
+  * **Working Peers** (can be used in `persistent_peers`)
+  * **Snapshot-Capable Peers** (can be used for state sync)
+
+### 🔁 Usage
+
+```bash
+./persistent-peer-checker.sh
+```
+
+### 📤 Output Example
+
+```text
+🔎 Checking peers...
+8542cd...@seed.publicnode.com:26656 ✅ Reachable
+   📦 Provides 3 snapshot(s)
+
+...
+
+==============================
+✅ Usable Peers: 4
+<joined_peer_list>
+
+📦 Snapshot-Capable Peers: 2
+<joined_snapshot_peers>
+==============================
+```
+
+You can take the output from this script and paste it directly into your `config.toml` like:
+
+```toml
+persistent_peers = "peer1@ip1:port1,peer2@ip2:port2,..."
 ```
 
 ---
@@ -83,3 +179,5 @@ I'm open to collaboration! If you're looking for DevOps support for your validat
 💻 [GitHub](https://github.dev/rzanei/)
 
 👔 [LinkedIn](https://www.linkedin.com/in/rzanei-dev)
+
+---
