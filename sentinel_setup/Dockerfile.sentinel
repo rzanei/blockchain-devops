@@ -1,0 +1,30 @@
+FROM rzanei/linux-ubuntu-base:0.0.1
+
+# === ENV VARS ===
+ENV NODE_VERSION=0.11.5
+ENV NODE=sentinelhub
+ENV DEST_DIR=/opt/blockchain-devops/${NODE}-${NODE_VERSION}
+
+# === INSTALL TOOLS ===
+RUN apt-get update --fix-missing -y && \
+    apt-get install -y wget zstd pv lz4 unzip && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# === DOWNLOAD & INSTALL SENTINELHUB BINARY ===
+RUN mkdir -p ${DEST_DIR} && \
+    URL="https://github.com/sentinel-official/$NODE/releases/download/v${NODE_VERSION}/${NODE}" && \
+    wget -c "${URL}" -O "/tmp/${NODE}" && \
+    mv "/tmp/${NODE}" "${DEST_DIR}/${NODE}" && \
+    chmod +x "${DEST_DIR}/${NODE}" && \
+    ln -s "${DEST_DIR}/${NODE}" /usr/bin/${NODE}
+
+# === COPY STARTUP SCRIPTS ===
+COPY sentinel_start.sh /usr/local/bin/sentinel_start.sh
+COPY sentinel_service_run.sh /usr/local/bin/sentinel_service_run.sh
+COPY sentinel_validator_create.sh /usr/local/bin/sentinel_validator_create.sh
+COPY sentinel_restake.sh /usr/local/bin/sentinel_restake.sh
+
+RUN chmod +x /usr/local/bin/sentinel_*.sh
+
+# === ENTRYPOINT ===
+ENTRYPOINT ["/usr/local/bin/sentinel_service_run.sh"]
