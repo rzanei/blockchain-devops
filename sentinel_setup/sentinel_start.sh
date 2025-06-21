@@ -131,6 +131,7 @@ jq '
   }
   | del(.app_state.gov.params)
 ' "$GENESIS" > "$GENESIS.tmp" && mv "$GENESIS.tmp" "$GENESIS"
+# cp "$GENESIS" "./genesis.sentinelhub-2.$(date +%Y%m%d).json"
 
 # === CONFIGURE NODE ===
 echo "⚙️ Configuring node..."
