@@ -1,7 +1,3 @@
-Here's your **updated and professional `README.md` section** with Sentinel added and the note on Osmosis clarified:
-
----
-
 # 🛠️ Blockchain DevOps
 
 This repository contains scripts and configurations to automate the setup of blockchain nodes using Docker and containerization. The focus is on providing streamlined setups for the following blockchains:
