@@ -13,7 +13,7 @@ DENOM="udvpn"
 GENESIS="$HOMEDIR/config/genesis.json"
 CONFIG="$HOMEDIR/config/config.toml"
 APP="$HOMEDIR/config/app.toml"
-SNAP_URL="https://snapshots.polkachu.com/snapshots/sentinel/sentinel_22104343.tar.lz4"
+SNAP_URL="https://snapshots.polkachu.com/snapshots/sentinel/sentinel_24152206.tar.lz4"
 SNAP_FILE="$HOME/snapshot.tar.lz4"
 export NO_COLOR=1
 
@@ -31,7 +31,7 @@ if [ "$INIT_NODE" = true ]; then
   echo "🚀 Initializing Sentinel validator node..."
   $TARGET init "$MONIKER" --chain-id "$CHAINID" --home "$HOMEDIR"
 
-  echo "🌐 Downloading genesis file for Sentinel dVPN v0.11.5..."
+  echo "🌐 Downloading genesis file for Sentinel dVPN v12..."
   curl -fsSL -o genesis.zip "https://github.com/sentinel-official/networks/raw/refs/heads/main/sentinelhub-2/genesis.zip"
   unzip -o genesis.zip -d "$HOMEDIR/config/"
   rm genesis.zip
@@ -61,7 +61,7 @@ if [ "$INIT_NODE" = true ]; then
   sed -i 's/^trust_hash *=.*/trust_hash = ""/' "$CONFIG"
 fi
 
-# === PATCH GENESIS: ensure required fields for Sentinel v0.11.5 ===
+# === PATCH GENESIS: ensure required fields for Sentinel v12 ===
 jq '
   # === REMOVE unsupported fields ===
   del(
@@ -84,6 +84,10 @@ jq '
   # === ADD status_change_delay for sessions and subscriptions
   | .app_state.vpn.sessions.params.status_change_delay = (.app_state.vpn.sessions.params.status_change_delay // "60s")
   | .app_state.vpn.subscriptions.params.status_change_delay = (.app_state.vpn.subscriptions.params.status_change_delay // "120s")
+
+  # === ADD new staking params for Cosmos SDK v0.47 ===
+  | .app_state.staking.params.min_commission_rate = (.app_state.staking.params.min_commission_rate // "0.000000000000000000")
+  | .app_state.staking.params.downtime_jail_duration = (.app_state.staking.params.downtime_jail_duration // "600s")
 ' "$GENESIS" > "$GENESIS.tmp" && mv "$GENESIS.tmp" "$GENESIS"
 
 # === FIX GOV PROPOSALS FOR Cosmos SDK v0.45 ===
