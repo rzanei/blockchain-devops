@@ -1,7 +1,7 @@
 FROM rzanei/linux-ubuntu-base:0.0.1
 
 # === ENV VARS ===
-ENV NODE_VERSION=0.11.5
+ENV NODE_VERSION=12.0.0
 ENV NODE=sentinelhub
 ENV DEST_DIR=/opt/blockchain-devops/${NODE}-${NODE_VERSION}
 
@@ -22,7 +22,6 @@ RUN mkdir -p ${DEST_DIR} && \
 COPY sentinel_start.sh /usr/local/bin/sentinel_start.sh
 COPY sentinel_service_run.sh /usr/local/bin/sentinel_service_run.sh
 COPY sentinel_validator_create.sh /usr/local/bin/sentinel_validator_create.sh
-COPY sentinel_restake.sh /usr/local/bin/sentinel_restake.sh
 
 RUN chmod +x /usr/local/bin/sentinel_*.sh
 
