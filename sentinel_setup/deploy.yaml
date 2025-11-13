@@ -1,13 +1,22 @@
+---
 version: "2.0"
 
 services:
   node:
-    image: rzanei/sentinelhub_v0.11.5:v0.11.5-rc0
+    image: rzanei/sentinelhub_v12.0.0:v12.0.0-rc0
+    pull_policy: always
+    env:
+      - GENESIS_URL=https://snapshots.polkachu.com/genesis/sentinel/genesis.json
+      - SNAP_URL=https://snapshots.polkachu.com/snapshots/sentinel/sentinel_24375011.tar.lz4
+      - INIT_NODE=true
+      - PERSISTENT_PEERS=22d8779a7fa39c81ca457be8ea8e6d51bd886045@38.102.86.36:21056,65d87ee4d3a29cf7364a7a9889787c65ee70146c@23.227.221.173:26656,7766ec993ae96803834e15ef1e06ffbdf5d8257c@95.211.45.16:21056
     expose:
       - port: 26657
+        as: 26657
         to:
           - global: true
       - port: 26656
+        as: 26656
         to:
           - global: true
     params:
@@ -37,7 +46,7 @@ profiles:
         host: akash
       signedBy:
         anyOf:
-          - akash1365yvmc4s7awdyj3n2sav7xfx76adc6dnmlx63
+          - "akash1365yvmc4s7awdyj3n2sav7xfx76adc6dnmlx63"
       pricing:
         node:
           denom: uakt
