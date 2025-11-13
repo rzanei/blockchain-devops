@@ -13,48 +13,71 @@ DENOM="udvpn"
 GENESIS="$HOMEDIR/config/genesis.json"
 CONFIG="$HOMEDIR/config/config.toml"
 APP="$HOMEDIR/config/app.toml"
-SNAP_URL="https://snapshots.polkachu.com/snapshots/sentinel/sentinel_24152206.tar.lz4"
+GENESIS_URL="${GENESIS_URL:-https://snapshots.polkachu.com/genesis/sentinel/genesis.json}"
+SNAP_URL="${SNAP_URL:-https://snapshots.polkachu.com/snapshots/sentinel/sentinel_24352327.tar.lz4}"
+PERSISTENT_PEERS="${PERSISTENT_PEERS:-22d8779a7fa39c81ca457be8ea8e6d51bd886045@38.102.86.36:21056,65d87ee4d3a29cf7364a7a9889787c65ee70146c@23.227.221.173:26656,7766ec993ae96803834e15ef1e06ffbdf5d8257c@95.211.45.16:21056}"
+INIT_NODE="${INIT_NODE:-true}" # Defines the first time setup! true == first time false == data exist already
 SNAP_FILE="$HOME/snapshot.tar.lz4"
 export NO_COLOR=1
 
-
-# === FIRST-TIME CHECK ===
-if [ ! -d "$HOMEDIR/data" ]; then
-  echo "🧹 First-time setup..."
-  INIT_NODE=true
-else
-  echo "✅ Blockchain data exists."
-  INIT_NODE=false
-fi
-
 if [ "$INIT_NODE" = true ]; then
-  echo "🚀 Initializing Sentinel validator node..."
-  $TARGET init "$MONIKER" --chain-id "$CHAINID" --home "$HOMEDIR"
+  echo "Initializing Sentinel Validator Node..."
 
-  echo "🌐 Downloading genesis file for Sentinel dVPN v12..."
-  curl -fsSL -o genesis.zip "https://github.com/sentinel-official/networks/raw/refs/heads/main/sentinelhub-2/genesis.zip"
-  unzip -o genesis.zip -d "$HOMEDIR/config/"
-  rm genesis.zip
+  # -----------------------------------------------------------------
+  # 1. INIT – only if the config directory does NOT exist yet
+  # -----------------------------------------------------------------
+  if [ ! -d "$HOMEDIR/config" ]; then
+    $TARGET init "$MONIKER" --chain-id "$CHAINID" --home "$HOMEDIR"
+  else
+    echo "Config directory already exists – skipping init"
+  fi
 
-  echo "📥 Downloading snapshot file..."
-  curl -L -o "$SNAP_FILE" "$SNAP_URL"
+  # -----------------------------------------------------------------
+  # 2. GENESIS – download **only if the file is missing**
+  # -----------------------------------------------------------------
+  if [ ! -f "$GENESIS" ]; then
+    echo "Downloading genesis file for Sentinel dVPN v12..."
+    wget -O "$HOMEDIR/config/genesis.json.tmp" "$GENESIS_URL" --inet4-only
+    mv "$HOMEDIR/config/genesis.json.tmp" "$GENESIS"
+  else
+    echo "Genesis file already present – skipping download"
+  fi
 
-  echo "⚠ Resetting node state..."
+  # -----------------------------------------------------------------
+  # 3. SNAPSHOT – the rest of your original block (unchanged)
+  # -----------------------------------------------------------------
+  echo "Downloading Snapshot File..."
+  curl -fL --retry 6 --retry-connrefused --retry-delay 5 \
+    -H "User-Agent: sentinelhub-bootstrap/1.0" \
+    -o "$SNAP_FILE" "$SNAP_URL"
+
+  if [ ! -s "$SNAP_FILE" ]; then
+    echo "Snapshot file is empty. URL may be wrong or blocked: $SNAP_URL"
+    exit 1
+  fi
+
+  if ! lz4 -t "$SNAP_FILE"; then
+    echo "Snapshot is not valid LZ4 (likely an HTML error page). First bytes:"
+    head -c 200 "$SNAP_FILE" | sed -e 's/[^[:print:]\t]/./g'
+    exit 1
+  fi
+
+  echo "Resetting node state..."
   $TARGET tendermint unsafe-reset-all --home "$HOMEDIR" --keep-addr-book
 
-  echo "📦 Extracting snapshot (with progress)..."
-  tar --use-compress-program=unzstd -xvf "$SNAP_FILE" -C "$HOMEDIR"
+  echo "Extracting snapshot (with progress)..."
+  lz4 -dc "$SNAP_FILE" | tar -xvf - -C "$HOMEDIR"
 
-  echo "🧹 Cleaning up snapshot file..."
+  echo "Cleaning up snapshot file..."
   rm -f "$SNAP_FILE"
 
-  echo "🔧 Restore priv_validator_state.json if backup exists..."
+  echo "Restore priv_validator_state.json if backup exists..."
   if [ -f "$HOMEDIR/priv_validator_state.json.bak" ]; then
     cp "$HOMEDIR/priv_validator_state.json.bak" "$HOMEDIR/data/priv_validator_state.json"
     rm "$HOMEDIR/priv_validator_state.json.bak"
   fi
 
-  echo "❌ Disabling state sync to avoid conflict..."
+  echo "Disabling state sync to avoid conflict..."
   sed -i 's/^enable *=.*/enable = false/' "$CONFIG"
   sed -i 's/^rpc_servers *=.*/rpc_servers = ""/' "$CONFIG"
   sed -i 's/^trust_height *=.*/trust_height = 0/' "$CONFIG"
@@ -87,7 +110,6 @@ jq '
 
   # === ADD new staking params for Cosmos SDK v0.47 ===
   | .app_state.staking.params.min_commission_rate = (.app_state.staking.params.min_commission_rate // "0.000000000000000000")
-  | .app_state.staking.params.downtime_jail_duration = (.app_state.staking.params.downtime_jail_duration // "600s")
 ' "$GENESIS" > "$GENESIS.tmp" && mv "$GENESIS.tmp" "$GENESIS"
 
 # === FIX GOV PROPOSALS FOR Cosmos SDK v0.45 ===
@@ -152,8 +174,7 @@ sed -i 's|^storage.discard_abci_responses *=.*|storage.discard_abci_responses = 
 sed -i 's|^iavl-disable-fastnode *=.*|iavl-disable-fastnode = true|' "$APP" || echo 'iavl-disable-fastnode = true' >> "$APP"
 
 # Configure persistent peers
-PEERS="22d8779a7fa39c81ca457be8ea8e6d51bd886045@38.102.86.36:21056,65d87ee4d3a29cf7364a7a9889787c65ee70146c@23.227.221.173:26656,7766ec993ae96803834e15ef1e06ffbdf5d8257c@95.211.45.16:21056"
-sed -i "s|^persistent_peers *=.*|persistent_peers = \"$PEERS\"|" "$CONFIG"
+sed -i "s|^persistent_peers *=.*|persistent_peers = \"$PERSISTENT_PEERS\"|" "$CONFIG"
 sed -i 's/^minimum-gas-prices = ""/minimum-gas-prices = "0.1udvpn"/' "$APP"
 
 # === CUSTOM PRUNING & SNAPSHOT STRATEGY ===
