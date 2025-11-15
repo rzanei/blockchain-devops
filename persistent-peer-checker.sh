@@ -1,55 +1,124 @@
 #!/bin/bash
 
-# List of peers to check (format: NODE_ID@IP:PORT)
-PEERS=("ade4d8bc8cbe014af6ebdf3cb7b1e9ad36f412c0@seeds.polkachu.com:13956"
-"ebc272824924ea1a27ea3183dd0b9ba713494f83@kava-mainnet-seed.autostake.com:26656"
-"7ab4b78fbe5ee9e3777b21464a3162bd4cc17f57@seed-kava-01.stakeflow.io:1206"
-"8542cd7e6bf9d260fef543bc49e59be5a3fa9074@seed.publicnode.com:26656"
-"10ed1e176d874c8bb3c7c065685d2da6a4b86475@seed-kava.ibs.team:16677")
+set -euo pipefail
+
+# ============================================================
+# Generic Cosmos addrbook peer checker
+#
+# Usage examples:
+#   CHAIN_NAME=sentinelhub-2 ./check_peers_from_addrbook.sh
+#   ADDRBOOK_URL=https://snapshots.polkachu.com/addrbook/sentinel/addrbook.json ./check_peers_from_addrbook.sh
+#
+# Env vars:
+#   CHAIN_NAME       - chain name used in addrbook URL, e.g. "sentinel" or "kava"
+#   ADDRBOOK_URL     - full addrbook URL (overrides CHAIN_NAME)
+#   ADDRBOOK_BASE    - base URL, defaults to https://snapshots.polkachu.com/addrbook
+#   MAX_PEERS        - max peers from addrbook to test (default: 50)
+#   NC_TIMEOUT       - netcat timeout per peer in seconds (default: 2)
+#   CHECK_SNAPSHOTS  - "true" to check snapshot endpoint via RPC (default: false)
+#   SNAP_RPC_PATTERN - pattern for snapshot RPC URL using IP placeholder "IP"
+#                      default: "http://IP:26657/snapshots"
+# ============================================================
+
+ADDRBOOK_BASE="${ADDRBOOK_BASE:-https://snapshots.polkachu.com/addrbook}"
+CHAIN_NAME="${CHAIN_NAME:-}"
+ADDRBOOK_URL="${ADDRBOOK_URL:-}"
+MAX_PEERS="${MAX_PEERS:-50}"
+NC_TIMEOUT="${NC_TIMEOUT:-2}"
+CHECK_SNAPSHOTS="${CHECK_SNAPSHOTS:-false}"
+SNAP_RPC_PATTERN="${SNAP_RPC_PATTERN:-http://IP:26657/snapshots}"
+
+if [[ -z "$ADDRBOOK_URL" ]]; then
+  if [[ -z "$CHAIN_NAME" ]]; then
+    echo "❌ ERROR: Set either CHAIN_NAME or ADDRBOOK_URL" >&2
+    echo "Example:" >&2
+    echo "  CHAIN_NAME=sentinel ./check_peers_from_addrbook.sh" >&2
+    echo "  ADDRBOOK_URL=https://snapshots.polkachu.com/addrbook/sentinel/addrbook.json ./check_peers_from_addrbook.sh" >&2
+    exit 1
+  fi
+  ADDRBOOK_URL="${ADDRBOOK_BASE}/${CHAIN_NAME}/addrbook.json"
+fi
+
+echo "🌐 Using addrbook URL: $ADDRBOOK_URL"
+echo "🔎 Fetching addrbook..."
+
+TMP_ADDRBOOK="$(mktemp)"
+trap 'rm -f "$TMP_ADDRBOOK"' EXIT
+
+if ! curl -fsSL "$ADDRBOOK_URL" -o "$TMP_ADDRBOOK"; then
+  echo "❌ Failed to download addrbook from: $ADDRBOOK_URL" >&2
+  exit 1
+fi
+
+echo "📦 Parsing peers from addrbook..."
+mapfile -t ALL_PEERS < <(jq -r '.addrs[].addr | "\(.id)@\(.ip):\(.port)"' "$TMP_ADDRBOOK" 2>/dev/null | head -n "$MAX_PEERS")
+
+if [[ ${#ALL_PEERS[@]} -eq 0 ]]; then
+  echo "❌ No peers found in addrbook (or unexpected format)" >&2
+  exit 1
+fi
+
+echo "Found ${#ALL_PEERS[@]} peers in addrbook (testing up to $MAX_PEERS)..."
+echo
 
 WORKING_PEERS=()
 SNAPSHOT_PEERS=()
-echo "🔎 Checking peers..."
 
-for peer in "${PEERS[@]}"; do
-  node_id=$(echo "$peer" | cut -d@ -f1)
-  address=$(echo "$peer" | cut -d@ -f2)
-  ip=$(echo "$address" | cut -d: -f1)
-  port=$(echo "$address" | cut -d: -f2)
+for peer in "${ALL_PEERS[@]}"; do
+  node_id="${peer%@*}"
+  address="${peer#*@}"
+  ip="${address%%:*}"
+  port="${address##*:}"
 
-  # Check if peer is reachable
-  nc -z -w2 "$ip" "$port" &>/dev/null
-  if [ $? -eq 0 ]; then
-    echo "$peer ✅ Reachable"
+  echo -n "⏱  Testing $peer ... "
 
+  if nc -z -w "$NC_TIMEOUT" "$ip" "$port" &>/dev/null; then
+    echo "✅ Reachable"
     WORKING_PEERS+=("$peer")
 
-    # Check if snapshot endpoint returns anything
-    SNAPSHOT_URL="http://$ip:$port/snapshots"
-    SNAP_RESPONSE=$(curl -s --max-time 5 "$SNAPSHOT_URL")
-    COUNT=$(echo "$SNAP_RESPONSE" | jq '.result.snapshots | length' 2>/dev/null || echo 0)
+    if [[ "$CHECK_SNAPSHOTS" == "true" ]]; then
+      snap_url="${SNAP_RPC_PATTERN//IP/$ip}"
 
-    if [[ "$COUNT" -gt 0 ]]; then
-      echo "   📦 Provides $COUNT snapshot(s)"
-      SNAPSHOT_PEERS+=("$peer")
-    else
-      echo "   ❌ No snapshots found"
+      # Note: This assumes the node exposes RPC on that IP (and whatever port
+      # you set in SNAP_RPC_PATTERN). This may not match the P2P port.
+      SNAP_RESPONSE="$(curl -s --max-time 5 "$snap_url" || true)"
+
+      if [[ -n "$SNAP_RESPONSE" ]]; then
+        count="$(echo "$SNAP_RESPONSE" | jq '.result.snapshots | length' 2>/dev/null || echo 0)"
+        if [[ "$count" -gt 0 ]]; then
+          echo "   📦 Provides $count snapshot(s) at $snap_url"
+          SNAPSHOT_PEERS+=("$peer")
+        else
+          echo "   ❌ No snapshots found at $snap_url"
+        fi
+      else
+        echo "   ⚠️ No response from snapshot URL: $snap_url"
+      fi
     fi
   else
-    echo "$peer ❌ Unreachable"
+    echo "❌ Unreachable"
   fi
 done
 
-# Format outputs
-WORKING_JOINED=$(IFS=, ; echo "${WORKING_PEERS[*]}")
-SNAPSHOT_JOINED=$(IFS=, ; echo "${SNAPSHOT_PEERS[*]}")
-
 echo
 echo "=============================="
-echo "✅ Usable Peers: ${#WORKING_PEERS[@]}"
-echo "$WORKING_JOINED"
+echo "✅ Usable (reachable) peers: ${#WORKING_PEERS[@]}"
+if [[ ${#WORKING_PEERS[@]} -gt 0 ]]; then
+  WORKING_JOINED=$(IFS=, ; echo "${WORKING_PEERS[*]}")
+  echo "$WORKING_JOINED"
+  echo
+  echo "👉 You can use this in your deployment YAML:"
+  echo "    - PERSISTENT_PEERS=$WORKING_JOINED"
+else
+  echo "None"
+fi
 
 echo
-echo "📦 Snapshot-Capable Peers: ${#SNAPSHOT_PEERS[@]}"
-echo "$SNAPSHOT_JOINED"
+echo "📦 Snapshot-capable peers (based on RPC pattern): ${#SNAPSHOT_PEERS[@]}"
+if [[ ${#SNAPSHOT_PEERS[@]} -gt 0 ]]; then
+  SNAPSHOT_JOINED=$(IFS=, ; echo "${SNAPSHOT_PEERS[*]}")
+  echo "$SNAPSHOT_JOINED"
+else
+  echo "None (or CHECK_SNAPSHOTS=false)"
+fi
 echo "=============================="
