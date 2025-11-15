@@ -1,15 +1,14 @@
----
 version: "2.0"
 
 services:
   node:
-    image: rzanei/sentinelhub_v12.0.0:v12.0.0-rc0
+    image: rzanei/sentinelhub_v12.0.0:v12.0.0
     pull_policy: always
     env:
       - GENESIS_URL=https://snapshots.polkachu.com/genesis/sentinel/genesis.json
-      - SNAP_URL=https://snapshots.polkachu.com/snapshots/sentinel/sentinel_24375011.tar.lz4
+      - SNAP_URL=https://snapshots.polkachu.com/snapshots/sentinel/sentinel_24420257.tar.lz4
       - INIT_NODE=true
-      - PERSISTENT_PEERS=22d8779a7fa39c81ca457be8ea8e6d51bd886045@38.102.86.36:21056,65d87ee4d3a29cf7364a7a9889787c65ee70146c@23.227.221.173:26656,7766ec993ae96803834e15ef1e06ffbdf5d8257c@95.211.45.16:21056
+      - PERSISTENT_PEERS=c773ecc4fce799d3064b45cf6a9a13b28aaefa3d@88.205.101.202:26656,9e108fb71ce0749e9d874595bb8560d267c69789@35.228.251.58:26656,7a608cf632825669b69801f3b9917d660eab556c@185.148.1.181:26656,2b1ecb22f9c0da6e241075cf0e8f248d2e01e637@217.154.22.215:26656,c4dcd639a38688fb20b0c122eed5fb0cad02678a@217.154.22.215:26656,c9ce449ce1cbdbf857a30c3a88539ba63e7d29e8@151.115.88.82:26656
     expose:
       - port: 26657
         as: 26657
@@ -44,6 +43,7 @@ profiles:
     dcloud:
       attributes:
         host: akash
+        organization: europlots
       signedBy:
         anyOf:
           - "akash1365yvmc4s7awdyj3n2sav7xfx76adc6dnmlx63"
