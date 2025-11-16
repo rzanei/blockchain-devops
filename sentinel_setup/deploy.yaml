@@ -2,12 +2,10 @@ version: "2.0"
 
 services:
   node:
-    image: rzanei/sentinelhub_v12.0.0:v12.0.0
+    image: rzanei/sentinelhub_v12.0.0:v12.0.1
     pull_policy: always
     env:
       - GENESIS_URL=https://snapshots.polkachu.com/genesis/sentinel/genesis.json
-      - SNAP_URL=https://snapshots.polkachu.com/snapshots/sentinel/sentinel_24420257.tar.lz4
-      - INIT_NODE=true
       - PERSISTENT_PEERS=c773ecc4fce799d3064b45cf6a9a13b28aaefa3d@88.205.101.202:26656,9e108fb71ce0749e9d874595bb8560d267c69789@35.228.251.58:26656,7a608cf632825669b69801f3b9917d660eab556c@185.148.1.181:26656,2b1ecb22f9c0da6e241075cf0e8f248d2e01e637@217.154.22.215:26656,c4dcd639a38688fb20b0c122eed5fb0cad02678a@217.154.22.215:26656,c9ce449ce1cbdbf857a30c3a88539ba63e7d29e8@151.115.88.82:26656
     expose:
       - port: 26657
@@ -28,13 +26,13 @@ profiles:
     node:
       resources:
         cpu:
-          units: 8
+          units: 4
         memory:
-          size: 64Gi
+          size: 16Gi
         storage:
           - size: 10Gi
           - name: data
-            size: 400Gi
+            size: 200Gi
             attributes:
               persistent: true
               class: beta3
@@ -50,7 +48,7 @@ profiles:
       pricing:
         node:
           denom: uakt
-          amount: 500
+          amount: 99
 
 deployment:
   node:
