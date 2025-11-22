@@ -6,8 +6,8 @@ set -euo pipefail
 # Generic Cosmos addrbook peer checker
 #
 # Usage examples:
-#   CHAIN_NAME=sentinelhub-2 ./check_peers_from_addrbook.sh
-#   ADDRBOOK_URL=https://snapshots.polkachu.com/addrbook/sentinel/addrbook.json ./check_peers_from_addrbook.sh
+#   CHAIN_NAME=sentinelhub-2 ./persistent-peer-checker.sh
+#   ADDRBOOK_URL=https://snapshots.polkachu.com/addrbook/sentinel/addrbook.json ./persistent-peer-checker.sh
 #
 # Env vars:
 #   CHAIN_NAME       - chain name used in addrbook URL, e.g. "sentinel" or "kava"
@@ -32,8 +32,8 @@ if [[ -z "$ADDRBOOK_URL" ]]; then
   if [[ -z "$CHAIN_NAME" ]]; then
     echo "❌ ERROR: Set either CHAIN_NAME or ADDRBOOK_URL" >&2
     echo "Example:" >&2
-    echo "  CHAIN_NAME=sentinel ./check_peers_from_addrbook.sh" >&2
-    echo "  ADDRBOOK_URL=https://snapshots.polkachu.com/addrbook/sentinel/addrbook.json ./check_peers_from_addrbook.sh" >&2
+    echo "  CHAIN_NAME=sentinel ./persistent-peer-checker.sh" >&2
+    echo "  ADDRBOOK_URL=https://snapshots.polkachu.com/addrbook/sentinel/addrbook.json ./persistent-peer-checker.sh" >&2
     exit 1
   fi
   ADDRBOOK_URL="${ADDRBOOK_BASE}/${CHAIN_NAME}/addrbook.json"
