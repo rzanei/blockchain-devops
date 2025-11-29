@@ -1,13 +1,19 @@
 ---
 version: "2.0"
+
 services:
   node:
-    image: rzanei/akash_v0.38.4:v0.38.4-rc14
+    image: rzanei/akash_v1.0.4:v1.0.4-rc8
+    pull_policy: always
+    env:
+      - PERSISTENT_PEERS=6d7dbed6c434ed0d897ecdd87ae17e133d593896@65.108.128.201:12856
     expose:
       - port: 26657
+        as: 26657
         to:
           - global: true
       - port: 26656
+        as: 26656
         to:
           - global: true
     params:
@@ -22,25 +28,25 @@ profiles:
         cpu:
           units: 4
         memory:
-          size: 32Gi
+          size: 16Gi
         storage:
           - size: 10Gi
           - name: data
             size: 400Gi
             attributes:
               persistent: true
-              class: beta3
+              class: beta2
   placement:
     dcloud:
       attributes:
         host: akash
       signedBy:
         anyOf:
-          - akash1365yvmc4s7awdyj3n2sav7xfx76adc6dnmlx63
+          - "akash1365yvmc4s7awdyj3n2sav7xfx76adc6dnmlx63"
       pricing:
         node:
           denom: uakt
-          amount: 1000
+          amount: 5000
 
 deployment:
   node:
