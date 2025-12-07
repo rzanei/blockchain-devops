@@ -3,7 +3,7 @@ version: "2.0"
 
 services:
   node:
-    image: rzanei/akash_v1.0.4:v1.0.4-rc8
+    image: rzanei/akash_v1.1.1:v1.1.1-rc3
     pull_policy: always
     env:
       - PERSISTENT_PEERS=6d7dbed6c434ed0d897ecdd87ae17e133d593896@65.108.128.201:12856
